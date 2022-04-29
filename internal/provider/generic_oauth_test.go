@@ -137,4 +137,5 @@ func TestGenericOAuthGetUser(t *testing.T) {
 	assert.Nil(err)
 
 	assert.Equal("example@example.com", user.Email)
+	assert.Equal("5678", user.UserId)
 }

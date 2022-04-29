@@ -40,7 +40,8 @@ func (s *OAuthServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			"id":"1",
 			"email":"example@example.com",
 			"verified_email":true,
-			"hd":"example.com"
+			"hd":"example.com",
+			"sub":"5678"
 		}`)
 	} else {
 		s.t.Fatal("Unrecognised request: ", r.Method, r.URL, string(body))

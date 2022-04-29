@@ -116,7 +116,7 @@ func TestOIDCGetUser(t *testing.T) {
 		"iss": "`+serverURL.String()+`",
 		"exp":`+strconv.FormatInt(time.Now().Add(time.Hour).Unix(), 10)+`,
 		"aud": "idtest",
-		"sub": "1",
+		"sub": "5678",
 		"email": "example@example.com",
 		"email_verified": true
 	}`))
@@ -125,6 +125,7 @@ func TestOIDCGetUser(t *testing.T) {
 	user, err := provider.GetUser(token)
 	assert.Nil(err)
 	assert.Equal("example@example.com", user.Email)
+	assert.Equal("5678", user.UserId)
 }
 
 // Utils
