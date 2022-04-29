@@ -98,7 +98,7 @@ func TestServerAuthHandlerInvalid(t *testing.T) {
 
 	// Should catch invalid cookie
 	req = newDefaultHttpRequest("/foo")
-	c := MakeCookie(req, "test@example.com")
+	c := MakeCookie(req, "test@example.com", "54321")
 	parts = strings.Split(c.Value, "|")
 	c.Value = fmt.Sprintf("bad|%s|%s", parts[1], parts[2])
 
@@ -107,7 +107,7 @@ func TestServerAuthHandlerInvalid(t *testing.T) {
 
 	// Should validate email
 	req = newDefaultHttpRequest("/foo")
-	c = MakeCookie(req, "test@example.com")
+	c = MakeCookie(req, "test@example.com", "54321")
 	config.Domains = []string{"test.com"}
 
 	res, _ = doHttpRequest(req, c)
@@ -122,7 +122,7 @@ func TestServerAuthHandlerExpired(t *testing.T) {
 
 	// Should redirect expired cookie
 	req := newHTTPRequest("GET", "http://example.com/foo")
-	c := MakeCookie(req, "test@example.com")
+	c := MakeCookie(req, "test@example.com", "54321")
 	res, _ := doHttpRequest(req, c)
 	require.Equal(t, 307, res.StatusCode, "request with expired cookie should be redirected")
 
@@ -148,7 +148,7 @@ func TestServerAuthHandlerValid(t *testing.T) {
 
 	// Should allow valid request email
 	req := newHTTPRequest("GET", "http://example.com/foo")
-	c := MakeCookie(req, "test@example.com")
+	c := MakeCookie(req, "test@example.com", "54321")
 	config.Domains = []string{}
 
 	res, _ := doHttpRequest(req, c)
@@ -158,6 +158,9 @@ func TestServerAuthHandlerValid(t *testing.T) {
 	users := res.Header["X-Forwarded-User"]
 	assert.Len(users, 1, "valid request should have X-Forwarded-User header")
 	assert.Equal([]string{"test@example.com"}, users, "X-Forwarded-User header should match user")
+	userId := res.Header["X-Forwarded-User-Id"]
+	assert.Len(userId, 1, "valid request should have X-Forwarded-User-Id header")
+	assert.Equal([]string{"54321"}, userId, "X-Forwarded-User-Id header should match user")
 }
 
 func TestServerAuthCallback(t *testing.T) {

@@ -33,14 +33,14 @@ func TestAuthValidateCookie(t *testing.T) {
 	if assert.Error(err) {
 		assert.Equal("Invalid cookie format", err.Error())
 	}
-	c.Value = "1|2|3|4"
+	c.Value = "1|2|3|4|5"
 	_, err = ValidateCookie(r, c)
 	if assert.Error(err) {
 		assert.Equal("Invalid cookie format", err.Error())
 	}
 
 	// Should catch invalid mac
-	c.Value = "MQ==|2|3"
+	c.Value = "MQ==|2|3|4"
 	_, err = ValidateCookie(r, c)
 	if assert.Error(err) {
 		assert.Equal("Invalid cookie mac", err.Error())
@@ -48,7 +48,7 @@ func TestAuthValidateCookie(t *testing.T) {
 
 	// Should catch expired
 	config.Lifetime = time.Second * time.Duration(-1)
-	c = MakeCookie(r, "test@test.com")
+	c = MakeCookie(r, "test@test.com", "12345")
 	_, err = ValidateCookie(r, c)
 	if assert.Error(err) {
 		assert.Equal("Cookie has expired", err.Error())
@@ -56,10 +56,11 @@ func TestAuthValidateCookie(t *testing.T) {
 
 	// Should accept valid cookie
 	config.Lifetime = time.Second * time.Duration(10)
-	c = MakeCookie(r, "test@test.com")
+	c = MakeCookie(r, "test@test.com", "54321")
 	email, err := ValidateCookie(r, c)
 	assert.Nil(err, "valid request should not return an error")
-	assert.Equal("test@test.com", email, "valid request should return user email")
+	assert.Equal("test@test.com", email.email, "valid request should return user email")
+	assert.Equal("54321", email.userid, "valid request should return user email")
 }
 
 func TestAuthValidateEmail(t *testing.T) {
@@ -260,10 +261,10 @@ func TestAuthMakeCookie(t *testing.T) {
 	r, _ := http.NewRequest("GET", "http://app.example.com", nil)
 	r.Header.Add("X-Forwarded-Host", "app.example.com")
 
-	c := MakeCookie(r, "test@example.com")
+	c := MakeCookie(r, "test@example.com", "12345")
 	assert.Equal("_forward_auth", c.Name)
 	parts := strings.Split(c.Value, "|")
-	assert.Len(parts, 3, "cookie should be 3 parts")
+	assert.Len(parts, 4, "cookie should be 4 parts")
 	_, err := ValidateCookie(r, c)
 	assert.Nil(err, "should generate valid cookie")
 	assert.Equal("/", c.Path)
@@ -275,7 +276,7 @@ func TestAuthMakeCookie(t *testing.T) {
 
 	config.CookieName = "testname"
 	config.InsecureCookie = true
-	c = MakeCookie(r, "test@example.com")
+	c = MakeCookie(r, "test@example.com", "54321")
 	assert.Equal("testname", c.Name)
 	assert.False(c.Secure)
 }
